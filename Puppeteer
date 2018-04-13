@@ -1,0 +1,31 @@
+const puppeteer = require('puppeteer');
+
+(async() => {
+
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
+    await page.goto('https://stackoverflow.com/', {waitUntil: 'load'});
+    console.log(page.url());
+
+    // Type our query into the search bar
+    await page.focus('.js-search-field');
+    await page.type('puppeteer');
+
+    // Submit form
+    await page.press('Enter');
+
+    // Wait for search results page to load
+    await page.waitForNavigation({waitUntil: 'load'});
+
+
+    console.log('FOUND!', page.url());
+
+    // Extract the results from the page
+    const links = await page.evaluate(() => {
+      const anchors = Array.from(document.querySelectorAll('.result-link a'));
+      return anchors.map(anchor => anchor.textContent);
+    });
+    console.log(links.join('\n'));
+    browser.close();
+
+})();
